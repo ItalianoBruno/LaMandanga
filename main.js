@@ -21,9 +21,14 @@ const config = {
   physics: {
     default: "arcade",
     arcade: {
-      gravity: { y: 1300 },
+      gravity: { y: 1400 },
       debug: true,
     },
+  },
+  render: {
+    pixelArt: true,
+    antialias: false,
+    roundPixels: true,
   },
   // List of scenes to load
   // Only the first scene will be shown

@@ -137,7 +137,7 @@ this.time.addEvent({
     enemigo.setCollideWorldBounds(false);
     enemigo.setImmovable(true);
     enemigo.body.allowGravity = false;
-    enemigo.setScale(1.2);
+    enemigo.setScale(1.8);
   }
 
   createNewEvent() {
@@ -174,7 +174,7 @@ this.time.addEvent({
       y = 50;
     }
 
-    const senal = this.add.image(x, y, key).setScale(1.5);
+    const senal = this.add.image(x, y, key).setScale(2);
     senal.direction = direction;
     this.senales.add(senal);
     this.senalActive = senal;
