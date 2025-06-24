@@ -13,7 +13,7 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.load.spritesheet("dude", "./public/assets/dude.png", {
       frameWidth: 32,
-      frameHeight: 48, 
+      frameHeight: 48,
     });
     this.load.image("IndicadorIzq", "./public/assets/Indicador-I.png");
     this.load.image("IndicarorDer", "./public/assets/Indicador-D.png");
@@ -21,22 +21,22 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-
-    //                                                          |Player|
+    //                                                               |Player|
 
     this.player = this.physics.add.sprite(150, 900, "dude");
     this.player.setScale(2.25);
     this.player.setCollideWorldBounds(true);
     this.player.flipX = true;
+    this.player.body.setSize(20, 35).setOffset(5, 13);
 
-    //                                                          |Camara|
+    //                                                               |Camara|
 
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setZoom(1);
     // Limita la cámara al tamaño del mapa
     this.cameras.main.setBounds(0, 0, 1920, 1080);
 
-    //                                                           |Piso|
+    //                                                                |Piso|
 
     this.ground = this.add.tileSprite(0, 1010, 1550, 100, "dude");
     this.ground.setOrigin(0, 0);
@@ -56,15 +56,14 @@ export default class Game extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
 
-    
-    //                                                      |Crear enemigos| 
+    //                                                          |Crear enemigos|
 
     // Grupo para los objetos enemigos
     this.enemigos = this.physics.add.group();
 
     // Intervalo de aparición (en milisegundos)
     this.tiempoAparicion = Phaser.Math.Between(500, 1000); // Cambia este valor para ajustar el intervalo
-    this.velocidadEnemigo = -400; //velocidad
+    this.velocidadEnemigo = -450; //velocidad
     // Evento para crear el primer enemigo
     const startEvent = this.time.addEvent({
       delay: this.tiempoAparicion,
@@ -75,25 +74,25 @@ export default class Game extends Phaser.Scene {
       callbackScope: this,
       loop: false,
     });
-    
+
     // Evento para crear enemigos periódicamente
 
-    //                                                        |Señales|
+    //                                                             |Señales|
 
-this.senales = this.add.group();
-this.senalKeys = ["IndicadorIzq", "IndicarorDer", "IndicadorUp"];
-this.senalDirections = ["left", "right", "up"];
-this.senalActive = null;
+    this.senales = this.add.group();
+    this.senalKeys = ["IndicadorIzq", "IndicarorDer", "IndicadorUp"];
+    this.senalDirections = ["left", "right", "up"];
+    this.senalActive = null;
 
-// Crear señales
-this.time.addEvent({
-  delay: 2000, 
-  callback: this.spawnSenal,
-  callbackScope: this,
-  loop: true,
-});
+    // Crear señales
+    this.time.addEvent({
+      delay: 2000,
+      callback: this.spawnSenal,
+      callbackScope: this,
+      loop: true,
+    });
 
-    //                                          |Colisión entre jugador y enemigos|
+    //                                                 |Colisión entre jugador y enemigos|
 
     this.physics.add.overlap(
       this.player,
@@ -106,42 +105,42 @@ this.time.addEvent({
       this
     );
 
-    // vel pj
-    this.speed = 650;
-
     //Sumar puntos a lo largo del tiempo
     this.score = 0; // Inicializa el puntaje
     this.time.addEvent({
       delay: 100,
       callback: () => {
         this.score += 1;
-        this.scoreText.setText('Puntaje: ' + this.score);
+        this.scoreText.setText("Puntaje: " + this.score);
       },
       callbackScope: this,
       loop: true,
     });
 
     // Mostrar puntaje en pantalla
-    this.scoreText = this.add.text(32, 32, 'Puntaje: 0', {
-      fontSize: '48px',
-      fill: '#fff',
-      fontFamily: 'Arial'
+    this.scoreText = this.add.text(32, 32, "Puntaje: 0", {
+      fontSize: "48px",
+      fill: "#fff",
+      fontFamily: "Arial",
     });
     this.scoreText.setScrollFactor(0); // Para que el texto siga la cámara
+
+    // vel pj
+    this.speed = 900;
   }
 
   update() {
-    
-    //                                                           |Salto|
+    //                                                               |Salto|
 
-    
-    if (Phaser.Input.Keyboard.JustDown(this.spaceBar) && this.player.body.touching.down) {
+    if (
+      Phaser.Input.Keyboard.JustDown(this.spaceBar) &&
+      this.player.body.touching.down
+    ) {
       // Salta solo si está en el suelo y se acaba de presionar la barra
       this.player.setVelocityY(-this.speed);
     } else if (
       !this.player.body.touching.down &&
-      this.spaceBar.isDown &&
-      this.player.body.velocity.y > 0 // Solo si está cayendo
+      this.player.body.velocity.y > -385 // Solo si está cayendo
     ) {
       // Si está en el aire, mantiene la barra y está cayendo, cae rápido
       this.player.setVelocityY(this.speed);
@@ -152,32 +151,33 @@ this.time.addEvent({
       console.log("Phaser.Input.Keyboard.JustDown(this.keyR)");
       this.scene.restart();
     }
-    //                                                 |Comportamiento de señales|
+    //                                                     |Comportamiento de señales|
 
     if (this.senalActive) {
       if (
-        !this.senalActive.isRed && (
-          (this.senalActive.direction === "left" && this.cursors.left.isDown) ||
-          (this.senalActive.direction === "right" && this.cursors.right.isDown) ||
-          (this.senalActive.direction === "up" && this.cursors.up.isDown)
-        )
+        !this.senalActive.isRed &&
+        ((this.senalActive.direction === "left" && this.cursors.left.isDown) ||
+          (this.senalActive.direction === "right" &&
+            this.cursors.right.isDown) ||
+          (this.senalActive.direction === "up" && this.cursors.up.isDown))
       ) {
-        this.senalActive.setTint(0xFFD700); // Dorado
+        this.senalActive.setTint(0xffd700); // Dorado
         this.time.delayedCall(200, () => {
           if (this.senalActive) {
             this.senalActive.destroy();
             this.senales.clear(true, true);
             this.senalActive = null;
             this.score += 50; // Puntos x señal
-            this.scoreText.setText('Puntaje: ' + this.score);
-            // Actualiza el texto de puntaje si tienes uno 
+            this.scoreText.setText("Puntaje: " + this.score);
+            // Actualiza el texto de puntaje si tienes uno
           }
         });
       } else {
         // Flecha incorrecta
         if (
           (this.cursors.left.isDown && this.senalActive.direction !== "left") ||
-          (this.cursors.right.isDown && this.senalActive.direction !== "right") ||
+          (this.cursors.right.isDown &&
+            this.senalActive.direction !== "right") ||
           (this.cursors.up.isDown && this.senalActive.direction !== "up")
         ) {
           if (!this.senalActive.isRed) {
@@ -196,10 +196,10 @@ this.time.addEvent({
     }
   }
 
-  //                                                        |Crear enemigos|
+  //                                                         |Crear enemigos|
 
   createEnemy() {
-    const enemigo = this.enemigos.create(1950, 980, "bomb"); 
+    const enemigo = this.enemigos.create(1950, 980, "bomb");
     enemigo.setVelocityX(this.velocidadEnemigo);
     enemigo.setCollideWorldBounds(false);
     enemigo.setImmovable(true);
@@ -214,13 +214,13 @@ this.time.addEvent({
       callback: () => {
         this.createEnemy();
         this.createNewEvent();
-        //  console.log("Nuevo enemigo creado " + this.tiempoAparicion);  
+        //  console.log("Nuevo enemigo creado " + this.tiempoAparicion);
       },
       callbackScope: this,
       loop: false,
     });
   }
-  //                                                        |Crear señales|
+  //                                                          |Crear señales|
 
   spawnSenal() {
     // Si ya hay una señal activa, no crear otra
@@ -237,7 +237,8 @@ this.time.addEvent({
     } else if (direction === "right") {
       x = 1850;
       y = 510;
-    } else { // up
+    } else {
+      // up
       x = 950;
       y = 75;
     }
@@ -253,7 +254,7 @@ this.time.addEvent({
         senal.destroy();
         this.senales.clear(true, true);
         this.senalActive = null;
-      } 
+      }
     });
   }
 }
