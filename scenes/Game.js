@@ -21,18 +21,23 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    //Player
+
+    //                                                          |Player|
+
     this.player = this.physics.add.sprite(150, 900, "dude");
     this.player.setScale(2.25);
     this.player.setCollideWorldBounds(true);
     this.player.flipX = true;
-    //Camara
+
+    //                                                          |Camara|
+
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setZoom(1);
     // Limita la cámara al tamaño del mapa
     this.cameras.main.setBounds(0, 0, 1920, 1080);
 
-    //piso
+    //                                                           |Piso|
+
     this.ground = this.add.tileSprite(0, 1010, 1550, 100, "dude");
     this.ground.setOrigin(0, 0);
     this.ground.setScale(2);
@@ -51,15 +56,16 @@ export default class Game extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
 
+    
+    //                                                      |Crear enemigos| 
+
     // Grupo para los objetos enemigos
     this.enemigos = this.physics.add.group();
 
     // Intervalo de aparición (en milisegundos)
     this.tiempoAparicion = Phaser.Math.Between(500, 1000); // Cambia este valor para ajustar el intervalo
-    this.velocidadEnemigo = -400; // Cambia este valor para ajustar la velocidad
-
-    // Evento para crear enemigos periódicamente
-
+    this.velocidadEnemigo = -400; //velocidad
+    // Evento para crear el primer enemigo
     const startEvent = this.time.addEvent({
       delay: this.tiempoAparicion,
       callback: () => {
@@ -72,21 +78,23 @@ export default class Game extends Phaser.Scene {
     
     // Evento para crear enemigos periódicamente
 
-    // Señales
+    //                                                        |Señales|
+
 this.senales = this.add.group();
 this.senalKeys = ["IndicadorIzq", "IndicarorDer", "IndicadorUp"];
 this.senalDirections = ["left", "right", "up"];
 this.senalActive = null;
 
-// Evento periódico para crear señales
+// Crear señales
 this.time.addEvent({
-  delay: 1250, // cada 2 segundos (ajusta a gusto)
+  delay: 2000, 
   callback: this.spawnSenal,
   callbackScope: this,
   loop: true,
 });
 
-    // Colisión entre jugador y enemigos
+    //                                          |Colisión entre jugador y enemigos|
+
     this.physics.add.overlap(
       this.player,
       this.enemigos,
@@ -123,9 +131,20 @@ this.time.addEvent({
   }
 
   update() {
-    if (this.spaceBar.isDown && this.player.body.touching.down) {
-      
+    
+    //                                                           |Salto|
+
+    
+    if (Phaser.Input.Keyboard.JustDown(this.spaceBar) && this.player.body.touching.down) {
+      // Salta solo si está en el suelo y se acaba de presionar la barra
       this.player.setVelocityY(-this.speed);
+    } else if (
+      !this.player.body.touching.down &&
+      this.spaceBar.isDown &&
+      this.player.body.velocity.y > 0 // Solo si está cayendo
+    ) {
+      // Si está en el aire, mantiene la barra y está cayendo, cae rápido
+      this.player.setVelocityY(this.speed);
     }
     this.player.setVelocityX(0);
 
@@ -133,6 +152,7 @@ this.time.addEvent({
       console.log("Phaser.Input.Keyboard.JustDown(this.keyR)");
       this.scene.restart();
     }
+    //                                                 |Comportamiento de señales|
 
     if (this.senalActive) {
       if (
@@ -176,6 +196,8 @@ this.time.addEvent({
     }
   }
 
+  //                                                        |Crear enemigos|
+
   createEnemy() {
     const enemigo = this.enemigos.create(1950, 980, "bomb"); 
     enemigo.setVelocityX(this.velocidadEnemigo);
@@ -186,7 +208,7 @@ this.time.addEvent({
   }
 
   createNewEvent() {
-    this.tiempoAparicion = Phaser.Math.Between(1000, 3000); // Cambia este valor para ajustar el intervalo
+    this.tiempoAparicion = Phaser.Math.Between(1150, 3000); // Cambia este valor para ajustar el intervalo
     this.time.addEvent({
       delay: this.tiempoAparicion,
       callback: () => {
@@ -198,6 +220,7 @@ this.time.addEvent({
       loop: false,
     });
   }
+  //                                                        |Crear señales|
 
   spawnSenal() {
     // Si ya hay una señal activa, no crear otra
@@ -224,13 +247,13 @@ this.time.addEvent({
     this.senales.add(senal);
     this.senalActive = senal;
 
-    // Desaparecer la señal después de x segundos si no se presiona
+    // Desaparecer señal si no se presiona
     this.time.delayedCall(1100, () => {
       if (this.senalActive === senal) {
         senal.destroy();
         this.senales.clear(true, true);
         this.senalActive = null;
-      }
+      } 
     });
   }
 }
