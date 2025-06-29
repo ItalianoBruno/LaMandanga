@@ -16,6 +16,10 @@ export default class Game extends Phaser.Scene {
       frameHeight: 64,
     });
     this.load.image("saltoG", "./public/assets/saltoGC.png");
+    this.load.spritesheet("bomb", "./public/assets/dude.png", {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
     this.load.image("IndicadorIzq", "./public/assets/Indicador-I.png");
     this.load.image("IndicarorDer", "./public/assets/Indicador-D.png");
     this.load.image("IndicadorUp", "./public/assets/Indicador-U.png");
@@ -31,7 +35,7 @@ export default class Game extends Phaser.Scene {
     this.player = this.physics.add.sprite(225, 800, "dude");
     this.player.setScale(5.1);
     this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(15, 50).setOffset(26, 7);
+    this.player.body.setSize(16, 43).setOffset(24, 13);
     this.player.setDepth(100);
 
     //                                                               |Camara|
@@ -114,6 +118,26 @@ export default class Game extends Phaser.Scene {
       loop: true,
     });
 
+    // Grupo para coleccionables
+    this.coleccionables = this.physics.add.group();
+
+    // Temporizador para crear coleccionables cada 10 segundos
+    this.time.addEvent({
+      delay: 10000,
+      callback: this.spawnColeccionable,
+      callbackScope: this,
+      loop: true,
+    });
+
+    // Colisión entre jugador y coleccionable
+    this.physics.add.overlap(
+      this.player,
+      this.coleccionables,
+      this.collectColeccionable,
+      null,
+      this
+    );
+
     //                                                 |Colisión entre jugador y enemigos|
 
     this.physics.add.overlap(
@@ -161,8 +185,10 @@ export default class Game extends Phaser.Scene {
       repeat: -1     // Repetir infinitamente
     });
     
-    this.nextSpeedUpScore = 1000; // El primer objetivo de aceleración
+    this.nextSpeedUpScore = 500; // El primer objetivo de aceleración
     this.playerFall = -320; // Velocidad de caída del jugador
+    this.tiempoMaximo = 3000; // Tiempo máximo para que aparezca una señal
+    this.tiempoMinimo = 1150; // Tiempo mínimo para que aparezca una señal
   }
 
   update() {
@@ -234,7 +260,7 @@ export default class Game extends Phaser.Scene {
             this.senalActive.destroy();
             this.senales.clear(true, true);
             this.senalActive = null;
-            this.score += 50; // Puntos x señal
+            this.score += 100; // Puntos x señal
             this.scoreText.setText("Puntaje: " + this.score);
             // Actualiza el texto de puntaje si tienes uno
           }
@@ -262,12 +288,14 @@ export default class Game extends Phaser.Scene {
       }
     }
 
-    // Acelerar el juego cada vez que se alcanza un múltiplo de 1500 puntos
+    //                                                     |Acelerar|
     if (this.score >= this.nextSpeedUpScore) {
-      this.velocidadEnemigo *= 1.5;
-      this.pisoSpeed *= 1.5;
-      this.playerFall *= 1.2;
-      this.tiempoAparicion = Math.max(400, this.tiempoAparicion * 0.6);
+      this.velocidadEnemigo *= 1.34;
+      this.pisoSpeed *= 1.23;
+      this.playerFall *= 1.13;
+      this.tiempoMaximo *= 0.8
+      this.tiempoMinimo *= 0.8;
+      //this.tiempoAparicion = Math.max(this.tiempoMinimo * 0.55, this.tiempoMaximo * 0.55);
       console.log("Velocidad aumentada a: " + this.velocidadEnemigo +
         ", pisoSpeed: " + this.pisoSpeed);
       this.nextSpeedUpScore += 1000; // Siguiente objetivo
@@ -305,16 +333,18 @@ export default class Game extends Phaser.Scene {
   //                                                         |Crear enemigos|
 
   createEnemy() {
-    const enemigo = this.enemigos.create(1950, 922, "bomb");
+    const enemigo = this.enemigos.create(1950, 922, "bomb").setDepth(1000);
     enemigo.setVelocityX(this.velocidadEnemigo);
     enemigo.setCollideWorldBounds(false);
     enemigo.setImmovable(true);
     enemigo.body.allowGravity = false;
-    enemigo.setScale(1.8);
+    enemigo.body.setSize(22, 32);
+    enemigo.body.setOffset(5,2);
+    enemigo.setScale(2.5);
   }
 
   createNewEvent() {
-    this.tiempoAparicion = Phaser.Math.Between(1150, 3000); // Cambia este valor para ajustar el intervalo
+    this.tiempoAparicion = Phaser.Math.Between(this.tiempoMinimo, this.tiempoMaximo); // Cambia este valor para ajustar el intervalo
     this.time.addEvent({
       delay: this.tiempoAparicion,
       callback: () => {
@@ -348,7 +378,7 @@ export default class Game extends Phaser.Scene {
       y = 75;
     }
 
-    const senal = this.add.image(x, y, key).setScale(4).setDepth(100); // <-- aquí
+    const senal = this.add.image(x, y, key).setScale(4.5).setDepth(100); // <-- aquí
     senal.direction = direction;
     this.senales.add(senal);
     this.senalActive = senal;
@@ -361,5 +391,26 @@ export default class Game extends Phaser.Scene {
         this.senalActive = null;
       }
     });
+  }
+
+  //                                                         |Crear coleccionables|
+
+  spawnColeccionable() {
+    // Posiciones posibles en x para los coleccionables
+    const xPositions = [300, 600, 900, 1200, 1500, 1800];
+    const x = Phaser.Utils.Array.GetRandom(xPositions);
+    const y = 500; // Altura fija para los coleccionables
+
+    const coleccionable = this.coleccionables.create(x, y, "bomb").setDepth(1000);
+    coleccionable.setScale(2);
+    coleccionable.setCollideWorldBounds(false);
+    coleccionable.setBounce(0.6);
+    coleccionable.body.allowGravity = false;
+  }
+
+  collectColeccionable(player, coleccionable) {
+    coleccionable.destroy();
+    this.score += 500; // Aumenta el puntaje
+    this.scoreText.setText("Puntaje: " + this.score);
   }
 }
