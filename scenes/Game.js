@@ -111,7 +111,7 @@ export default class Game extends Phaser.Scene {
     this.senalActive = null;
 
     // Crear señales
-    this.time.addEvent({
+    this.senalEvent = this.time.addEvent({
       delay: 2000,
       callback: this.spawnSenal,
       callbackScope: this,
@@ -286,13 +286,12 @@ export default class Game extends Phaser.Scene {
     if (this.score >= this.nextSpeedUpScore) {
       this.velocidadEnemigo *= 1.34;
       this.pisoSpeed *= 1.23;
-      this.playerFall *= 1.13;
-      this.tiempoMaximo *= 0.8
+      this.playerFall *= 1.05;
+      this.tiempoMaximo *= 0.8;
       this.tiempoMinimo *= 0.8;
-      //this.tiempoAparicion = Math.max(this.tiempoMinimo * 0.55, this.tiempoMaximo * 0.55);
-      console.log("Velocidad aumentada a: " + this.velocidadEnemigo +
-        ", pisoSpeed: " + this.pisoSpeed);
-      this.nextSpeedUpScore += 1000; // Siguiente objetivo
+      // Acelera el spawneo de señales
+      this.senalEvent.delay *= 0.8;
+      this.nextSpeedUpScore += 1000;
     }
 
     // Movimiento del suelo tipo runner
@@ -344,7 +343,7 @@ export default class Game extends Phaser.Scene {
     enemigo.setScale(2.5);
 
     // --- Crear coleccionable seguro tras el enemigo de forma aleatoria ---
-    if (Phaser.Math.Between(1, 100) <= 30) { // <== probabilidad
+    if (Phaser.Math.Between(1, 100) <= 35.5) { // <== probabilidad
       const coleccionableX = 1950 + 150;
       const coleccionableY = 922 - 300;
       const coleccionable = this.coleccionables.create(coleccionableX, coleccionableY, "bomb").setDepth(1000);
@@ -423,6 +422,7 @@ export default class Game extends Phaser.Scene {
       this.tiempoMaximo *= 0.6;
       this.tiempoMinimo *= 0.6;
       this.player.setTint(0x00ff00);
+      this.senalEvent.delay *= 0.8;
 
       // Parpadeo en los últimos 3 segundos
       this.time.delayedCall(7000, () => {
@@ -449,6 +449,8 @@ export default class Game extends Phaser.Scene {
         this.pisoSpeed /= 1.5;
         this.tiempoMaximo /= 0.6;
         this.tiempoMinimo /= 0.6;
+        this.senalEvent.delay /= 0.8;
+
       });
     }
   }
