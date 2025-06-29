@@ -29,7 +29,7 @@ export default class Game extends Phaser.Scene {
     //                                                               |Player|
 
     this.player = this.physics.add.sprite(225, 800, "dude");
-    this.player.setScale(4);
+    this.player.setScale(5.1);
     this.player.setCollideWorldBounds(true);
     this.player.body.setSize(15, 50).setOffset(26, 7);
     this.player.setDepth(100);
@@ -45,6 +45,7 @@ export default class Game extends Phaser.Scene {
   
     this.pisoKeys = ["piso4", "piso3", "piso2", "piso2", "piso"];
     this.segmentWidth = 2040; // Ajusta según el tamaño real de tu asset y escala
+    this.pisoSpeed = 10; // Velocidad inicial del piso
 
     // Crea dos segmentos de piso, uno visible y otro justo a la derecha
     this.pisoSegments = [];
@@ -61,7 +62,7 @@ export default class Game extends Phaser.Scene {
 
     // Plataforma física invisible para colisión
     this.ground = this.add
-      .rectangle(0, 950, this.segmentWidth, 100, 0x000000, 0)
+      .rectangle(0, 930, this.segmentWidth, 100, 0x000000, 0)
       .setOrigin(0, 0);
     this.physics.add.existing(this.ground, true);
     this.physics.add.collider(this.player, this.ground);
@@ -84,7 +85,7 @@ export default class Game extends Phaser.Scene {
 
     // Intervalo de aparición (en milisegundos)
     this.tiempoAparicion = Phaser.Math.Between(500, 1000); // Cambia este valor para ajustar el intervalo
-    this.velocidadEnemigo = -450; //velocidad
+    this.velocidadEnemigo = -485; //velocidad
     // Evento para crear el primer enemigo
     const startEvent = this.time.addEvent({
       delay: this.tiempoAparicion,
@@ -119,8 +120,8 @@ export default class Game extends Phaser.Scene {
       this.player,
       this.enemigos,
       () => {
-        // Lógica de muerte: reinicia la escena o ve a GameOver
-        this.scene.restart();
+        // Cambia a la escena GameOver y pasa la puntuación
+        this.scene.start('gameover', { score: this.score });
       },
       null,
       this
@@ -159,6 +160,9 @@ export default class Game extends Phaser.Scene {
       frameRate: 15, // Velocidad de la animación
       repeat: -1     // Repetir infinitamente
     });
+    
+    this.nextSpeedUpScore = 1000; // El primer objetivo de aceleración
+    this.playerFall = -320; // Velocidad de caída del jugador
   }
 
   update() {
@@ -170,6 +174,7 @@ export default class Game extends Phaser.Scene {
         this.physics.world.pause();
         this.time.paused = true; // Pausa todos los eventos de tiempo
         this.pauseText = this.add.text(850, 500, 'PAUSA', { fontSize: '64px', fill: '#fff' });
+        this.player.anims.pause(); // <-- Pausa la animación del jugador
       } else {
         this.physics.world.resume();
         this.time.paused = false; // Reanuda todos los eventos de tiempo
@@ -177,6 +182,7 @@ export default class Game extends Phaser.Scene {
           this.pauseText.destroy();
           this.pauseText = null;
         }
+        this.player.anims.resume(); // <-- Reanuda la animación del jugador
       }
     }
 
@@ -194,7 +200,7 @@ export default class Game extends Phaser.Scene {
       this.player.isJumping = true;
     } else if (
       !this.player.body.touching.down &&
-      this.player.body.velocity.y > -335
+      this.player.body.velocity.y > this.playerFall
     ) {
       // Si está en el aire, mantiene la barra y está cayendo, cae rápido
       this.player.setVelocityY(this.speed);
@@ -256,8 +262,19 @@ export default class Game extends Phaser.Scene {
       }
     }
 
+    // Acelerar el juego cada vez que se alcanza un múltiplo de 1500 puntos
+    if (this.score >= this.nextSpeedUpScore) {
+      this.velocidadEnemigo *= 1.5;
+      this.pisoSpeed *= 1.5;
+      this.playerFall *= 1.2;
+      this.tiempoAparicion = Math.max(400, this.tiempoAparicion * 0.6);
+      console.log("Velocidad aumentada a: " + this.velocidadEnemigo +
+        ", pisoSpeed: " + this.pisoSpeed);
+      this.nextSpeedUpScore += 1000; // Siguiente objetivo
+    }
+
     // Movimiento del suelo tipo runner
-    const pisoSpeed = 10;
+    const pisoSpeed = this.pisoSpeed || 10; // Usa la nueva velocidad si está definida
 
     for (let piso of this.pisoSegments) {
       piso.x -= pisoSpeed;
@@ -303,7 +320,6 @@ export default class Game extends Phaser.Scene {
       callback: () => {
         this.createEnemy();
         this.createNewEvent();
-        //  console.log("Nuevo enemigo creado " + this.tiempoAparicion);
       },
       callbackScope: this,
       loop: false,
