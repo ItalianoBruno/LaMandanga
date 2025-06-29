@@ -32,10 +32,10 @@ export default class Game extends Phaser.Scene {
   create() {
     //                                                               |Player|
 
-    this.player = this.physics.add.sprite(225, 800, "dude");
+    this.player = this.physics.add.sprite(225, 750, "dude");
     this.player.setScale(5.1);
     this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(16, 43).setOffset(24, 13);
+    this.player.body.setSize(16, 47).setOffset(24, 9);
     this.player.setDepth(100);
 
     //                                                               |Camara|
@@ -89,7 +89,7 @@ export default class Game extends Phaser.Scene {
 
     // Intervalo de aparición (en milisegundos)
     this.tiempoAparicion = Phaser.Math.Between(500, 1000); // Cambia este valor para ajustar el intervalo
-    this.velocidadEnemigo = -485; //velocidad
+    this.velocidadEnemigo = -500; //velocidad
     // Evento para crear el primer enemigo
     const startEvent = this.time.addEvent({
       delay: this.tiempoAparicion,
@@ -118,34 +118,15 @@ export default class Game extends Phaser.Scene {
       loop: true,
     });
 
-    // Grupo para coleccionables
-    this.coleccionables = this.physics.add.group();
-
-    // Temporizador para crear coleccionables cada 10 segundos
-    this.time.addEvent({
-      delay: 10000,
-      callback: this.spawnColeccionable,
-      callbackScope: this,
-      loop: true,
-    });
-
-    // Colisión entre jugador y coleccionable
-    this.physics.add.overlap(
-      this.player,
-      this.coleccionables,
-      this.collectColeccionable,
-      null,
-      this
-    );
-
     //                                                 |Colisión entre jugador y enemigos|
 
     this.physics.add.overlap(
       this.player,
       this.enemigos,
       () => {
-        // Cambia a la escena GameOver y pasa la puntuación
-        this.scene.start('gameover', { score: this.score });
+        if (!this.isImmune) {
+          this.scene.start('gameover', { score: this.score });
+        }
       },
       null,
       this
@@ -189,6 +170,18 @@ export default class Game extends Phaser.Scene {
     this.playerFall = -320; // Velocidad de caída del jugador
     this.tiempoMaximo = 3000; // Tiempo máximo para que aparezca una señal
     this.tiempoMinimo = 1150; // Tiempo mínimo para que aparezca una señal
+
+    // Grupo para coleccionables
+    this.coleccionables = this.physics.add.group();
+
+    // Colisión entre jugador y coleccionable
+    this.physics.add.overlap(
+      this.player,
+      this.coleccionables,
+      this.collectColeccionable,
+      null,
+      this
+    );
   }
 
   update() {
@@ -257,10 +250,11 @@ export default class Game extends Phaser.Scene {
         this.senalActive.setTint(0xffd700); // Dorado
         this.time.delayedCall(200, () => {
           if (this.senalActive) {
+            let puntos = this.isImmune ? 200 : 100;
             this.senalActive.destroy();
             this.senales.clear(true, true);
             this.senalActive = null;
-            this.score += 100; // Puntos x señal
+            this.score += puntos; // Puntos x señal
             this.scoreText.setText("Puntaje: " + this.score);
             // Actualiza el texto de puntaje si tienes uno
           }
@@ -328,6 +322,13 @@ export default class Game extends Phaser.Scene {
 
     // Mueve la plataforma física junto con el segmento visible
     this.ground.x = this.pisoSegments[0].x;
+
+    // Elimina coleccionables fuera de pantalla
+    this.coleccionables.children.iterate((coleccionable) => {
+      if (coleccionable && coleccionable.x < -50) {
+        coleccionable.destroy();
+      }
+    });
   }
 
   //                                                         |Crear enemigos|
@@ -341,6 +342,18 @@ export default class Game extends Phaser.Scene {
     enemigo.body.setSize(22, 32);
     enemigo.body.setOffset(5,2);
     enemigo.setScale(2.5);
+
+    // --- Crear coleccionable seguro tras el enemigo de forma aleatoria ---
+    if (Phaser.Math.Between(1, 100) <= 30) { // <== probabilidad
+      const coleccionableX = 1950 + 150;
+      const coleccionableY = 922 - 300;
+      const coleccionable = this.coleccionables.create(coleccionableX, coleccionableY, "bomb").setDepth(1000);
+      coleccionable.setVelocityX(this.velocidadEnemigo);
+      coleccionable.setCollideWorldBounds(false);
+      coleccionable.setImmovable(true);
+      coleccionable.body.allowGravity = false;
+      coleccionable.setScale(2.5);
+    }
   }
 
   createNewEvent() {
@@ -393,24 +406,50 @@ export default class Game extends Phaser.Scene {
     });
   }
 
-  //                                                         |Crear coleccionables|
-
-  spawnColeccionable() {
-    // Posiciones posibles en x para los coleccionables
-    const xPositions = [300, 600, 900, 1200, 1500, 1800];
-    const x = Phaser.Utils.Array.GetRandom(xPositions);
-    const y = 500; // Altura fija para los coleccionables
-
-    const coleccionable = this.coleccionables.create(x, y, "bomb").setDepth(1000);
-    coleccionable.setScale(2);
-    coleccionable.setCollideWorldBounds(false);
-    coleccionable.setBounce(0.6);
-    coleccionable.body.allowGravity = false;
-  }
-
   collectColeccionable(player, coleccionable) {
     coleccionable.destroy();
-    this.score += 500; // Aumenta el puntaje
-    this.scoreText.setText("Puntaje: " + this.score);
+    this.coleccionados += 1;
+
+    // let puntos = this.isImmune ? 200 : 100;
+    // this.score += puntos;
+    // this.scoreText.setText("Puntaje: " + this.score);
+
+    
+    // Inmunidad por 10 segundos
+    if (this.coleccionados >= 10 && !this.isImmune) {
+      this.isImmune = true;
+      this.velocidadEnemigo *= 1.7;
+      this.pisoSpeed *= 1.5;
+      this.tiempoMaximo *= 0.6;
+      this.tiempoMinimo *= 0.6;
+      this.player.setTint(0x00ff00);
+
+      // Parpadeo en los últimos 3 segundos
+      this.time.delayedCall(7000, () => {
+        let blink = true;
+        const blinkEvent = this.time.addEvent({
+          delay: 200, // velocidad del parpadeo
+          repeat: 14, // 3 segundos / 0.2s = 15 parpadeos (aprox)
+          callback: () => {
+            if (blink) {
+              this.player.clearTint();
+            } else {
+              this.player.setTint(0x00ff00);
+            }
+            blink = !blink;
+          }
+        });
+      });
+
+      this.time.delayedCall(10000, () => {
+        this.isImmune = false;
+        this.player.clearTint();
+        this.coleccionados = 0;
+        this.velocidadEnemigo /= 1.7;
+        this.pisoSpeed /= 1.5;
+        this.tiempoMaximo /= 0.6;
+        this.tiempoMinimo /= 0.6;
+      });
+    }
   }
 }
