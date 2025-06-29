@@ -11,23 +11,28 @@ export default class Game extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet("dude", "./public/assets/dude.png", {
-      frameWidth: 32,
-      frameHeight: 48,
+    this.load.spritesheet("dude", "./public/assets/GarlyCharsia.png", {
+      frameWidth: 64,
+      frameHeight: 64,
     });
+    this.load.image("saltoG", "./public/assets/saltoGC.png");
     this.load.image("IndicadorIzq", "./public/assets/Indicador-I.png");
     this.load.image("IndicarorDer", "./public/assets/Indicador-D.png");
     this.load.image("IndicadorUp", "./public/assets/Indicador-U.png");
+    this.load.image("piso", "./public/Background/piso1,0.png");
+    this.load.image("piso2", "./public/Background/piso2,0.png");
+    this.load.image("piso3", "./public/Background/piso3,0.png");
+    this.load.image("piso4", "./public/Background/piso4,0.png");
   }
 
   create() {
     //                                                               |Player|
 
-    this.player = this.physics.add.sprite(150, 900, "dude");
-    this.player.setScale(2.25);
+    this.player = this.physics.add.sprite(225, 800, "dude");
+    this.player.setScale(4);
     this.player.setCollideWorldBounds(true);
-    this.player.flipX = true;
-    this.player.body.setSize(20, 35).setOffset(5, 13);
+    this.player.body.setSize(15, 50).setOffset(26, 7);
+    this.player.setDepth(100);
 
     //                                                               |Camara|
 
@@ -37,13 +42,28 @@ export default class Game extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 1920, 1080);
 
     //                                                                |Piso|
+  
+    this.pisoKeys = ["piso4", "piso3", "piso2", "piso2", "piso"];
+    this.segmentWidth = 2040; // Ajusta según el tamaño real de tu asset y escala
 
-    this.ground = this.add.tileSprite(0, 1010, 1550, 100, "dude");
-    this.ground.setOrigin(0, 0);
-    this.ground.setScale(2);
-    this.physics.add.existing(this.ground);
-    this.ground.body.setAllowGravity(false);
-    this.ground.body.setImmovable(true);
+    // Crea dos segmentos de piso, uno visible y otro justo a la derecha
+    this.pisoSegments = [];
+    for (let i = 0; i < 2; i++) { // El primer segmento está en la parte inferior, el segundo arriba
+      const key = Phaser.Utils.Array.GetRandom(this.pisoKeys);
+      const pisoSegY = key === "piso3" ? 254 : 560;
+      const piso = this.add
+        .image(i * this.segmentWidth, pisoSegY, key)
+        .setOrigin(0, 0)
+        .setScale(3)
+        .setDepth(5);
+      this.pisoSegments.push(piso);
+    }
+
+    // Plataforma física invisible para colisión
+    this.ground = this.add
+      .rectangle(0, 950, this.segmentWidth, 100, 0x000000, 0)
+      .setOrigin(0, 0);
+    this.physics.add.existing(this.ground, true);
     this.physics.add.collider(this.player, this.ground);
 
     //Profundidad de las capas
@@ -55,6 +75,7 @@ export default class Game extends Phaser.Scene {
     this.spaceBar = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
     );
+    this.keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
     //                                                          |Crear enemigos|
 
@@ -126,10 +147,42 @@ export default class Game extends Phaser.Scene {
     this.scoreText.setScrollFactor(0); // Para que el texto siga la cámara
 
     // vel pj
-    this.speed = 900;
+    this.speed = 930;
+
+    this.isPaused = false;
+    this.pauseText = null;
+
+    // Crear animación de correr para el jugador
+    this.anims.create({
+      key: 'correr',
+      frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 7 }),
+      frameRate: 15, // Velocidad de la animación
+      repeat: -1     // Repetir infinitamente
+    });
   }
 
   update() {
+
+    //                                                                |Pausa|
+    if (Phaser.Input.Keyboard.JustDown(this.keyEsc)) {
+      this.isPaused = !this.isPaused;
+      if (this.isPaused) {
+        this.physics.world.pause();
+        this.time.paused = true; // Pausa todos los eventos de tiempo
+        this.pauseText = this.add.text(850, 500, 'PAUSA', { fontSize: '64px', fill: '#fff' });
+      } else {
+        this.physics.world.resume();
+        this.time.paused = false; // Reanuda todos los eventos de tiempo
+        if (this.pauseText) {
+          this.pauseText.destroy();
+          this.pauseText = null;
+        }
+      }
+    }
+
+    // Si está en pausa, no ejecutar el resto de la lógica
+    if (this.isPaused) return;
+
     //                                                               |Salto|
 
     if (
@@ -138,9 +191,10 @@ export default class Game extends Phaser.Scene {
     ) {
       // Salta solo si está en el suelo y se acaba de presionar la barra
       this.player.setVelocityY(-this.speed);
+      this.player.isJumping = true;
     } else if (
       !this.player.body.touching.down &&
-      this.player.body.velocity.y > -385 // Solo si está cayendo
+      this.player.body.velocity.y > -335
     ) {
       // Si está en el aire, mantiene la barra y está cayendo, cae rápido
       this.player.setVelocityY(this.speed);
@@ -151,6 +205,13 @@ export default class Game extends Phaser.Scene {
       console.log("Phaser.Input.Keyboard.JustDown(this.keyR)");
       this.scene.restart();
     }
+
+    if (this.player.body.touching.down) {
+      this.player.anims.play('correr', true);
+    } else if (this.player.isJumping) {
+      this.player.setTexture('saltoG');
+    }
+
     //                                                     |Comportamiento de señales|
 
     if (this.senalActive) {
@@ -194,12 +255,40 @@ export default class Game extends Phaser.Scene {
         }
       }
     }
+
+    // Movimiento del suelo tipo runner
+    const pisoSpeed = 10;
+
+    for (let piso of this.pisoSegments) {
+      piso.x -= pisoSpeed;
+    }
+
+    // Si el primer segmento sale completamente de pantalla, recíclalo a la derecha del segundo
+    let first = this.pisoSegments[0];
+    let second = this.pisoSegments[1];
+    if (first.x + this.segmentWidth < -170) {
+      // Reposiciona justo después del segundo segmento
+      first.x = second.x + this.segmentWidth ;
+      // Cambia la textura aleatoriamente
+      const newKey = Phaser.Utils.Array.GetRandom(this.pisoKeys);
+      first.setTexture(newKey);
+      if (newKey === "piso3") { 
+        first.y = 254;
+      }else {
+        first.y = 560; // Asegúrate de que el piso esté en la posición correcta
+      }
+      // Reordena el array para mantener el ciclo
+      this.pisoSegments.push(this.pisoSegments.shift());
+    }
+
+    // Mueve la plataforma física junto con el segmento visible
+    this.ground.x = this.pisoSegments[0].x;
   }
 
   //                                                         |Crear enemigos|
 
   createEnemy() {
-    const enemigo = this.enemigos.create(1950, 980, "bomb");
+    const enemigo = this.enemigos.create(1950, 922, "bomb");
     enemigo.setVelocityX(this.velocidadEnemigo);
     enemigo.setCollideWorldBounds(false);
     enemigo.setImmovable(true);
@@ -243,7 +332,7 @@ export default class Game extends Phaser.Scene {
       y = 75;
     }
 
-    const senal = this.add.image(x, y, key).setScale(4);
+    const senal = this.add.image(x, y, key).setScale(4).setDepth(100); // <-- aquí
     senal.direction = direction;
     this.senales.add(senal);
     this.senalActive = senal;
