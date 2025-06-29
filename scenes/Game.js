@@ -285,13 +285,13 @@ export default class Game extends Phaser.Scene {
     //                                                     |Acelerar|
     if (this.score >= this.nextSpeedUpScore) {
       this.velocidadEnemigo *= 1.34;
-      this.pisoSpeed *= 1.23;
+      this.pisoSpeed *= 1.3;
       this.playerFall *= 1.05;
       this.tiempoMaximo *= 0.8;
       this.tiempoMinimo *= 0.8;
       // Acelera el spawneo de señales
       this.senalEvent.delay *= 0.8;
-      this.nextSpeedUpScore += 1000;
+      this.nextSpeedUpScore += 1500;
     }
 
     // Movimiento del suelo tipo runner
