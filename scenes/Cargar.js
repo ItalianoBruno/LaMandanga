@@ -107,6 +107,7 @@ export default class Cargar extends Phaser.Scene {
 
   create() {
     // Cuando termine la carga, pasa a la escena principal
+    localStorage.removeItem('highscore');
     this.scene.start("menu");
   }
 }
