@@ -7,25 +7,30 @@ export default class Opciones extends Phaser.Scene {
     this.score = data && data.score ? data.score : 0;
   }
 
-  preload() {
-    this.load.image("volver", "./public/assets/Play4.png");
-    this.load.image("contrl", "./public/assets/Play5.png");
-    this.load.image("ops", "./public/assets/Play3.png");
-    this.load.image("piso4", "./public/Background/piso4,0.png");
-  }
-
   create() {
+    // Fondo
+    this.add.image(960, 540, "fondoMenu").setOrigin(0.5, 0.5).setScale(2.995);
+    this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0.7).setDepth(1);
 
-    const btnMenu = this.add.image(260, 140, "volver")
-      .setInteractive({ useHandCursor: true }).setScale(3.3).setOrigin(0.5, 0.5)
+    this.add.text(960, 200, `Opciones`, 
+    { fontSize: '32px', fill: '#ffffff', fontFamily: '"Press Start 2P", monospace' })
+    .setScale(1.5).setOrigin(0.5, 0.5).setDepth(2);
+
+    // Botón volver
+    this.add.image(260, 140, "volver")
+      .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5).setDepth(3)
       .on('pointerdown', () => {
         this.scene.start('menu');
       });
-    const btnCtrl = this.add.image(260, 260, "contrl")
-      .setInteractive({ useHandCursor: true }).setScale(3.3).setOrigin(0.5, 0.5)
+
+    // Tecla Escape para volver
+    this.input.keyboard.on('keydown-ESC', () => {
+    this.scene.start('menu');
+    });
+    
+    this.add.image(460, 140, "contrl")
+      .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5).setDepth(3)
       .on('pointerdown', () => {
         this.scene.start('tuto');
       });
-
-
   }}

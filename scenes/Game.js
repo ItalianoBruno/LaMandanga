@@ -10,33 +10,6 @@ export default class Game extends Phaser.Scene {
     this.coleccionados = 0;
   }
 
-  preload() {
-    this.load.spritesheet("dude", "./public/assets/GarlyCharsia.png", {
-      frameWidth: 64,
-      frameHeight: 64,
-    });
-    this.load.image("saltoG", "./public/assets/saltoGC.png");
-    this.load.spritesheet("bomb", "./public/assets/dude.png", {
-      frameWidth: 32,
-      frameHeight: 32,
-    });
-    this.load.image("IndicadorIzq", "./public/assets/Indicador-I.png");
-    this.load.image("IndicarorDer", "./public/assets/Indicador-D.png");
-    this.load.image("IndicadorUp", "./public/assets/Indicador-U.png");
-    this.load.image("piso", "./public/Background/piso1,0.png");
-    this.load.image("piso2", "./public/Background/piso2,0.png");
-    this.load.image("piso3", "./public/Background/piso3,0.png");
-    this.load.image("piso4", "./public/Background/piso4,0.png");
-    this.load.image("Mandangometro1", "./public/assets/Mandangómetro1.png");
-    this.load.image("Mandangometro2", "./public/assets/Mandangómetro2.png");
-    this.load.image("Mandangometro3", "./public/assets/Mandangómetro3.png");
-    this.load.image("Mandangometro4", "./public/assets/Mandangómetro4.png");
-    this.load.image("Mandangometro5", "./public/assets/Mandangómetro5.png");
-    this.load.image("Mandangometro6", "./public/assets/Mandangómetro6.png");
-    this.load.image("Mandangometro7", "./public/assets/Mandangómetro7.png");
-    this.load.image("Mandangometro8", "./public/assets/Mandangómetro8.png");
-    this.load.image("Mandangometro9", "./public/assets/Mandangómetro9.png");
-  }
 
   create() {
     //                                                               |Player|
@@ -58,7 +31,7 @@ export default class Game extends Phaser.Scene {
   
     this.pisoKeys = ["piso4", "piso3", "piso2", "piso2", "piso"];
     this.segmentWidth = 2040; // Ajusta según el tamaño real de tu asset y escala
-    this.pisoSpeed = 13.5; // Velocidad inicial del piso
+    this.pisoSpeed = 16; // Velocidad inicial del piso
 
     // Crea dos segmentos de piso, uno visible y otro justo a la derecha
     this.pisoSegments = [];
@@ -80,9 +53,6 @@ export default class Game extends Phaser.Scene {
     this.physics.add.existing(this.ground, true);
     this.physics.add.collider(this.player, this.ground);
 
-    //Profundidad de las capas
-    //this.player.setDepth(1);
-
     //Resumir Teclas
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
@@ -98,7 +68,7 @@ export default class Game extends Phaser.Scene {
 
     // Intervalo de aparición (en milisegundos)
     this.tiempoAparicion = Phaser.Math.Between(500, 1000); // Cambia este valor para ajustar el intervalo
-    this.velocidadEnemigo = -550; //velocidad
+    this.velocidadEnemigo = -555; //velocidad
     // Evento para crear el primer enemigo
     const startEvent = this.time.addEvent({
       delay: this.tiempoAparicion,
@@ -134,7 +104,7 @@ export default class Game extends Phaser.Scene {
       this.enemigos,
       () => {
         if (!this.isImmune) {
-          this.scene.start('gameover', { score: this.score });
+          this.scene.start('gameover', { score: this.score },);
         }
       },
       null,
@@ -155,11 +125,9 @@ export default class Game extends Phaser.Scene {
 
     // Mostrar puntaje en pantalla
     this.scoreText = this.add.text(32, 32, "Puntaje: 0", {
-      fontSize: "48px",
-      fill: "#fff",
-      fontFamily: "Arial",
-    });
-    this.scoreText.setScrollFactor(0); // Para que el texto siga la cámara
+      fontSize: "48px",fill: "#fff",fontFamily: '"Press Start 2P", monospace'});
+
+    this.scoreText.setScrollFactor(0).setDepth(100); // Para que el texto siga la cámara
 
     // vel pj
     this.speed = 930;
@@ -171,7 +139,7 @@ export default class Game extends Phaser.Scene {
     this.anims.create({
       key: 'correr',
       frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 7 }),
-      frameRate: 15, // Velocidad de la animación
+      frameRate: 13, // Velocidad de la animación
       repeat: -1     // Repetir infinitamente
     });
     
@@ -197,6 +165,14 @@ export default class Game extends Phaser.Scene {
       .setScrollFactor(0)
       .setScale(2.5)
       .setDepth(200); // Asegúrate de que esté al frente
+
+    // Parallax layers (de fondo a frente)
+    this.cielo = this.add.tileSprite(960, 195, 1920, 380, "Cielo")
+    .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(0);
+    this.agua = this.add.tileSprite(960, 665, 1920, 225, "Agua")
+    .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(2);
+    this.ciudad = this.add.tileSprite(960, 370, 1490, 433, "Ciudad")
+      .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(3).setScale(2.3);
   }
 
   update() {
@@ -207,7 +183,7 @@ export default class Game extends Phaser.Scene {
       if (this.isPaused) {
         this.physics.world.pause();
         this.time.paused = true; // Pausa todos los eventos de tiempo
-        this.pauseText = this.add.text(850, 500, 'PAUSA', { fontSize: '64px', fill: '#fff' });
+        this.pauseText = this.add.text(850, 500, 'PAUSA', { fontSize: '64px', fill: '#fff', fontFamily: '"Press Start 2P", monospace' }).setDepth(100);
         this.player.anims.pause(); // <-- Pausa la animación del jugador
       } else {
         this.physics.world.resume();
@@ -300,9 +276,9 @@ export default class Game extends Phaser.Scene {
     //                                                           |Acelerar|
 
     if (this.score >= this.nextSpeedUpScore) {
-      this.velocidadEnemigo *= 1.25;
-      this.pisoSpeed *= 1.25;
-      this.playerFall *= 1.08;
+      this.velocidadEnemigo *= 1.2;
+      this.pisoSpeed *= 1.22;
+      this.playerFall *= 1.05;
       this.tiempoMaximo *= 0.8;
       this.tiempoMinimo *= 0.8;
       this.senalEvent.delay *= 0.8;
@@ -320,7 +296,7 @@ export default class Game extends Phaser.Scene {
 
     //                                                             |Piso|
 
-    const pisoSpeed = this.pisoSpeed || 13.5; // Usa la nueva velocidad si está definida
+    const pisoSpeed = this.pisoSpeed || 15; // Usa la nueva velocidad si está definida
 
     for (let piso of this.pisoSegments) {
       piso.x -= pisoSpeed;
@@ -365,30 +341,34 @@ export default class Game extends Phaser.Scene {
         coleccionable.setVelocityX(this.velocidadEnemigo);
       }
     });
+
+    this.cielo.tilePositionX += 0.2;
+    this.ciudad.tilePositionX += 0.5;
+    this.agua.tilePositionX += 0.1;
   }
 
   //                                                         |Crear enemigos|
 
   createEnemy() {
-    const enemigo = this.enemigos.create(1950, 890, "bomb").setDepth(1000);
+    const enemigo = this.enemigos.create(1950, 885, "obstaculo").setDepth(6);
     enemigo.setVelocityX(this.velocidadEnemigo);
     enemigo.setCollideWorldBounds(false);
     enemigo.setImmovable(true);
     enemigo.body.allowGravity = false;
-    enemigo.body.setSize(17, 22);
-    enemigo.body.setOffset(6,7);
-    enemigo.setScale(3.3);
+    enemigo.body.setSize(8, 20);
+    enemigo.body.setOffset(3,17);
+    enemigo.setScale(4.5);
 
     // --- Crear coleccionable seguro tras el enemigo de forma aleatoria ---
     if (Phaser.Math.Between(1, 100) <= 35.5) { // <== probabilidad
       const coleccionableX = 1950 + 150;
-      const coleccionableY = 922 - 300;
-      const coleccionable = this.coleccionables.create(coleccionableX, coleccionableY, "bomb").setDepth(1000);
-      coleccionable.setVelocityX(this.velocidadEnemigo);
+      const coleccionableY = 922 - 280;
+      const coleccionable = this.coleccionables.create(coleccionableX, coleccionableY, "coleccionable").setDepth(1000);
+      coleccionable.setVelocityX(this.velocidadEnemigo).flipX = true;
       coleccionable.setCollideWorldBounds(false);
       coleccionable.setImmovable(true);
       coleccionable.body.allowGravity = false;
-      coleccionable.setScale(2.5);
+      coleccionable.setScale(1.5);
     }
   }
 
