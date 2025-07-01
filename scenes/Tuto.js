@@ -44,30 +44,51 @@ export default class Tuto extends Phaser.Scene {
     controles.play('controles_anim');
     saltarContrl.play('saltar_anim');
 
-    this.add.image(260, 100, "volver")
+    // Botón volver
+    const btnVolver = this.add.image(260, 100, "volver")
       .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5).setDepth(3)
       .on('pointerdown', () => {
         this.scene.start('menu');
-      });
-      this.input.keyboard.on('keydown-ESC', () => {
-      this.scene.start('menu');
+      })
+      .on('pointerover', () => {
+        btnVolver.setScale(2.7);
+      })
+      .on('pointerout', () => {
+        btnVolver.setScale(3);
       });
 
+    // Tecla Escape para volver
+    this.input.keyboard.on('keydown-ESC', () => {
+      this.scene.start('menu');
+    });
+
     // Botón para volver a jugar
-    this.add.image(960, 840, "jugar")
+    const btnJugar = this.add.image(960, 840, "jugar")
       .setOrigin(0.5, 0.5)
       .setInteractive({ useHandCursor: true }).setScale(3.5)
       .setDepth(3)
       .on('pointerdown', () => {
         this.scene.start('game');
+      })
+      .on('pointerover', () => {
+        btnJugar.setScale(3.8);
+      })
+      .on('pointerout', () => {
+        btnJugar.setScale(3.5);
       });
 
-    // Botón para ir al menú
-    this.add.image(1780, 100, "ops")
+    // Botón para ir al menú de opciones
+    const btnOps = this.add.image(1780, 100, "ops")
       .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5)
       .setDepth(3)
       .on('pointerdown', () => {
         this.scene.start('opciones');
+      })
+      .on('pointerover', () => {
+        btnOps.setScale(2.7);
+      })
+      .on('pointerout', () => {
+        btnOps.setScale(3);
       });
   }
 }

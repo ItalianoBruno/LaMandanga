@@ -32,13 +32,29 @@ export default class GameOver extends Phaser.Scene {
       .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5).setDepth(2)
       .on('pointerdown', () => {
         this.scene.start('game');
+      })
+      .on('pointerover', () => {
+        btnReintentar.setScale(2.7);
+      })
+      .on('pointerout', () => {
+        btnReintentar.setScale(3);
       });
 
     // Botón para ir al menú
-    const btnMenu = this.add.image(960, 660, "menu")
+    const btnVolver = this.add.image(960, 660, "menu")
       .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5).setDepth(2)
       .on('pointerdown', () => {
         this.scene.start('menu');
+      })
+      .on('pointerover', () => {
+        btnVolver.setScale(2.7);
+      })
+      .on('pointerout', () => {
+        btnVolver.setScale(3);
       });
+      // Tecla Escape para volver
+      this.input.keyboard.on('keydown-ESC', () => {
+      this.scene.start('menu');
+    });
   }
 }

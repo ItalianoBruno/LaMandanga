@@ -17,7 +17,7 @@ export default class Game extends Phaser.Scene {
     this.player = this.physics.add.sprite(225, 750, "dude");
     this.player.setScale(5.1);
     this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(17, 47).setOffset(25, 9);
+    this.player.body.setSize(13, 47).setOffset(25, 9);
     this.player.setDepth(100);
 
     //                                                               |Camara|
