@@ -9,33 +9,27 @@ export default class GameOver extends Phaser.Scene {
 
   preload() {
     this.load.image("piso4", "./public/Background/piso4,0.png");
+    this.load.image("reintentar", "./public/assets/Play2.png");
+    this.load.image("menu", "./public/assets/Play4.png");
+    this.load.image("fondoMenu", "./public/Background/FondoMenu.png");
   }
 
   create() {
-    // Muestra el puntaje en pantalla
-    if (this.score <= 10) {
-      this.scorepos = 745;
-    } else if(this.score<=100) {
-      this.scorepos = 735;
-    } else if (this.score<=1000) {
-      this.scorepos = 725;
-    } else if (this.score<=10000) {   
-      this.scorepos = 705;
-    } else if (this.score<=100000) {
-      this.scorepos = 685; 
-    }
-    this.add.text(this.scorepos, 400, `Puntaje: ${this.score}`, { fontSize: '32px', fill: '#fff' }).setScale(2);
+    
+    this.add.image(960, 540, "fondoMenu").setOrigin(0.5, 0.5).setScale(2.995);
+
+    this.add.text(960, 400, `Puntaje:${this.score}`, { fontSize: '32px', fill: '#000000', fontFamily: '"Press Start 2P", monospace' }).setScale(1.5).setOrigin(0.5, 0.5);
 
     // Botón para volver a jugar
-    const btnReintentar = this.add.text(755, 500, 'Reintentar', { fontSize: '32px', fill: '#0f0' })
-      .setInteractive({ useHandCursor: true }).setScale(2)
+    const btnReintentar = this.add.image(960, 540, "reintentar")
+      .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5)
       .on('pointerdown', () => {
         this.scene.start('game');
       });
 
     // Botón para ir al menú
-    const btnMenu = this.add.text(875, 600, 'Menú', { fontSize: '32px', fill: '#0ff' })
-      .setInteractive({ useHandCursor: true }).setScale(2)
+    const btnMenu = this.add.image(960, 640, "menu")
+      .setInteractive({ useHandCursor: true }).setScale(3).setOrigin(0.5, 0.5)
       .on('pointerdown', () => {
         this.scene.start('menu');
       });

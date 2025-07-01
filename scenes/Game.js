@@ -27,6 +27,15 @@ export default class Game extends Phaser.Scene {
     this.load.image("piso2", "./public/Background/piso2,0.png");
     this.load.image("piso3", "./public/Background/piso3,0.png");
     this.load.image("piso4", "./public/Background/piso4,0.png");
+    this.load.image("Mandangometro1", "./public/assets/Mandangómetro1.png");
+    this.load.image("Mandangometro2", "./public/assets/Mandangómetro2.png");
+    this.load.image("Mandangometro3", "./public/assets/Mandangómetro3.png");
+    this.load.image("Mandangometro4", "./public/assets/Mandangómetro4.png");
+    this.load.image("Mandangometro5", "./public/assets/Mandangómetro5.png");
+    this.load.image("Mandangometro6", "./public/assets/Mandangómetro6.png");
+    this.load.image("Mandangometro7", "./public/assets/Mandangómetro7.png");
+    this.load.image("Mandangometro8", "./public/assets/Mandangómetro8.png");
+    this.load.image("Mandangometro9", "./public/assets/Mandangómetro9.png");
   }
 
   create() {
@@ -35,7 +44,7 @@ export default class Game extends Phaser.Scene {
     this.player = this.physics.add.sprite(225, 750, "dude");
     this.player.setScale(5.1);
     this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(16, 47).setOffset(24, 9);
+    this.player.body.setSize(17, 47).setOffset(25, 9);
     this.player.setDepth(100);
 
     //                                                               |Camara|
@@ -49,7 +58,7 @@ export default class Game extends Phaser.Scene {
   
     this.pisoKeys = ["piso4", "piso3", "piso2", "piso2", "piso"];
     this.segmentWidth = 2040; // Ajusta según el tamaño real de tu asset y escala
-    this.pisoSpeed = 10; // Velocidad inicial del piso
+    this.pisoSpeed = 13.5; // Velocidad inicial del piso
 
     // Crea dos segmentos de piso, uno visible y otro justo a la derecha
     this.pisoSegments = [];
@@ -89,7 +98,7 @@ export default class Game extends Phaser.Scene {
 
     // Intervalo de aparición (en milisegundos)
     this.tiempoAparicion = Phaser.Math.Between(500, 1000); // Cambia este valor para ajustar el intervalo
-    this.velocidadEnemigo = -500; //velocidad
+    this.velocidadEnemigo = -550; //velocidad
     // Evento para crear el primer enemigo
     const startEvent = this.time.addEvent({
       delay: this.tiempoAparicion,
@@ -182,6 +191,12 @@ export default class Game extends Phaser.Scene {
       null,
       this
     );
+
+    this.mandangometro = this.add.image(960, 1000, "Mandangometro1")
+      .setOrigin(0.5, 0.5)
+      .setScrollFactor(0)
+      .setScale(2.5)
+      .setDepth(200); // Asegúrate de que esté al frente
   }
 
   update() {
@@ -211,7 +226,7 @@ export default class Game extends Phaser.Scene {
     //                                                               |Salto|
 
     if (
-      Phaser.Input.Keyboard.JustDown(this.spaceBar) &&
+      this.spaceBar.isDown &&
       this.player.body.touching.down
     ) {
       // Salta solo si está en el suelo y se acaba de presionar la barra
@@ -282,20 +297,30 @@ export default class Game extends Phaser.Scene {
       }
     }
 
-    //                                                     |Acelerar|
+    //                                                           |Acelerar|
+
     if (this.score >= this.nextSpeedUpScore) {
-      this.velocidadEnemigo *= 1.34;
-      this.pisoSpeed *= 1.3;
-      this.playerFall *= 1.05;
+      this.velocidadEnemigo *= 1.25;
+      this.pisoSpeed *= 1.25;
+      this.playerFall *= 1.08;
       this.tiempoMaximo *= 0.8;
       this.tiempoMinimo *= 0.8;
-      // Acelera el spawneo de señales
       this.senalEvent.delay *= 0.8;
-      this.nextSpeedUpScore += 1500;
+
+      if (this.score < 3500){
+        this.nextSpeedUpScore += 1500;
+      }else if (this.score < 5500){
+        this.nextSpeedUpScore += 3000;
+      }else if (this.score < 8500){
+        this.nextSpeedUpScore += 6500;
+      }else {
+        this.nextSpeedUpScore += 99000;
+      }
     }
 
-    // Movimiento del suelo tipo runner
-    const pisoSpeed = this.pisoSpeed || 10; // Usa la nueva velocidad si está definida
+    //                                                             |Piso|
+
+    const pisoSpeed = this.pisoSpeed || 13.5; // Usa la nueva velocidad si está definida
 
     for (let piso of this.pisoSegments) {
       piso.x -= pisoSpeed;
@@ -318,14 +343,26 @@ export default class Game extends Phaser.Scene {
       // Reordena el array para mantener el ciclo
       this.pisoSegments.push(this.pisoSegments.shift());
     }
-
     // Mueve la plataforma física junto con el segmento visible
     this.ground.x = this.pisoSegments[0].x;
 
-    // Elimina coleccionables fuera de pantalla
+
+    //                                           |Elimina/Acomoda Vel de coleccionables|
+
     this.coleccionables.children.iterate((coleccionable) => {
       if (coleccionable && coleccionable.x < -50) {
         coleccionable.destroy();
+      }
+    });
+
+    this.enemigos.children.iterate((enemigo) => {
+      if (enemigo) {
+        enemigo.setVelocityX(this.velocidadEnemigo);
+      }
+    });
+    this.coleccionables.children.iterate((coleccionable) => {
+      if (coleccionable) {
+        coleccionable.setVelocityX(this.velocidadEnemigo);
       }
     });
   }
@@ -333,14 +370,14 @@ export default class Game extends Phaser.Scene {
   //                                                         |Crear enemigos|
 
   createEnemy() {
-    const enemigo = this.enemigos.create(1950, 922, "bomb").setDepth(1000);
+    const enemigo = this.enemigos.create(1950, 890, "bomb").setDepth(1000);
     enemigo.setVelocityX(this.velocidadEnemigo);
     enemigo.setCollideWorldBounds(false);
     enemigo.setImmovable(true);
     enemigo.body.allowGravity = false;
-    enemigo.body.setSize(22, 32);
-    enemigo.body.setOffset(5,2);
-    enemigo.setScale(2.5);
+    enemigo.body.setSize(17, 22);
+    enemigo.body.setOffset(6,7);
+    enemigo.setScale(3.3);
 
     // --- Crear coleccionable seguro tras el enemigo de forma aleatoria ---
     if (Phaser.Math.Between(1, 100) <= 35.5) { // <== probabilidad
@@ -405,51 +442,60 @@ export default class Game extends Phaser.Scene {
     });
   }
 
+  //                                                        |Recolectar inmunidad|
+
   collectColeccionable(player, coleccionable) {
     coleccionable.destroy();
     this.coleccionados += 1;
 
-    // let puntos = this.isImmune ? 200 : 100;
-    // this.score += puntos;
-    // this.scoreText.setText("Puntaje: " + this.score);
+    // Limita el valor máximo a 9
+    const nivel = Math.min(this.coleccionados + 1, 9);
+    this.mandangometro.setTexture("Mandangometro" + nivel);
 
-    
-    // Inmunidad por 10 segundos
-    if (this.coleccionados >= 10 && !this.isImmune) {
+    if (this.coleccionados >= 8 && !this.isImmune) {
       this.isImmune = true;
-      this.velocidadEnemigo *= 1.7;
+      this.velocidadEnemigo *= 1.5;
       this.pisoSpeed *= 1.5;
-      this.tiempoMaximo *= 0.6;
-      this.tiempoMinimo *= 0.6;
-      this.player.setTint(0x00ff00);
-      this.senalEvent.delay *= 0.8;
+      this.tiempoMaximo *= 1.5;
+      this.tiempoMinimo *= 1.5;
+      this.player.setTint(0xffd700);
+      this.senalEvent.delay *= 0.7;
 
-      // Parpadeo en los últimos 3 segundos
+      // Parpadeo
       this.time.delayedCall(7000, () => {
         let blink = true;
+        let mandangoNivel = 9; // Empieza lleno
         const blinkEvent = this.time.addEvent({
           delay: 200, // velocidad del parpadeo
-          repeat: 14, // 3 segundos / 0.2s = 15 parpadeos (aprox)
+          repeat: 15, // 3 segundos / 0.2s = 15 parpadeos (aprox)
           callback: () => {
+            // Cambia el tint del jugador
             if (blink) {
               this.player.clearTint();
             } else {
-              this.player.setTint(0x00ff00);
+              this.player.setTint(0xffd700);
             }
             blink = !blink;
+
+            // Reduce el Mandangómetro cada vez que parpadea (solo si está bajando)
+            if (mandangoNivel > 1) {
+              mandangoNivel-=1;
+              this.mandangometro.setTexture("Mandangometro" + mandangoNivel);
+            }
           }
         });
       });
 
-      this.time.delayedCall(10000, () => {
+      this.time.delayedCall(11000, () => {
         this.isImmune = false;
         this.player.clearTint();
         this.coleccionados = 0;
-        this.velocidadEnemigo /= 1.7;
+        this.mandangometro.setTexture("Mandangometro1");
+        this.velocidadEnemigo /= 1.5;
         this.pisoSpeed /= 1.5;
-        this.tiempoMaximo /= 0.6;
-        this.tiempoMinimo /= 0.6;
-        this.senalEvent.delay /= 0.8;
+        this.tiempoMaximo /= 1.5;
+        this.tiempoMinimo /= 1.5;
+        this.senalEvent.delay /= 0.7;
 
       });
     }

@@ -1,6 +1,6 @@
-export default class Menu extends Phaser.Scene {
+export default class Tuto extends Phaser.Scene {
   constructor() {
-    super("menu");
+    super("tuto");
   }
 
   init(data) {
@@ -9,19 +9,16 @@ export default class Menu extends Phaser.Scene {
   preload() {
     this.load.image("jugar", "./public/assets/Play1.png");
     this.load.image("ops", "./public/assets/Play3.png");
-    this.load.image("fondoMenu", "./public/Background/FondoMenu.png");
   }
 
   create() {
-    // Imagen de fondo
-    this.add.image(960, 540, "fondoMenu").setOrigin(0.5, 0.5).setScale(2.995);
 
     // Botón para volver a jugar
-    const btnReintentar = this.add.image(260, 640, "jugar")
+    const btnReintentar = this.add.image(960, 840, "jugar")
       .setOrigin(0.5, 0.5)
-      .setInteractive({ useHandCursor: true }).setScale(5)
+      .setInteractive({ useHandCursor: true }).setScale(3)
       .on('pointerdown', () => {
-        this.scene.start("tuto");
+        this.scene.start('game');
       });
 
     // Botón para ir al menú
@@ -31,5 +28,4 @@ export default class Menu extends Phaser.Scene {
         this.scene.start('opciones');
       });
 
-  }
-}
+  }}
