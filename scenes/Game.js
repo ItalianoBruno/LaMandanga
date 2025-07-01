@@ -14,6 +14,11 @@ export default class Game extends Phaser.Scene {
   create() {
     //                                                               |Player|
 
+    if(!this.music || !this.music.isPlaying) {
+    this.music = this.sound.add('GameMusic', { loop: true, volume: 0.5 });
+    this.music.play();
+    } else {}
+
     this.player = this.physics.add.sprite(225, 750, "dude");
     this.player.setScale(5.1);
     this.player.setCollideWorldBounds(true);
@@ -173,6 +178,7 @@ export default class Game extends Phaser.Scene {
     .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(2);
     this.ciudad = this.add.tileSprite(960, 370, 1490, 433, "Ciudad")
       .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(3).setScale(2.3);
+
   }
 
   update() {
@@ -182,9 +188,28 @@ export default class Game extends Phaser.Scene {
       this.isPaused = !this.isPaused;
       if (this.isPaused) {
         this.physics.world.pause();
-        this.time.paused = true; // Pausa todos los eventos de tiempo
-        this.pauseText = this.add.text(850, 500, 'PAUSA', { fontSize: '64px', fill: '#fff', fontFamily: '"Press Start 2P", monospace' }).setDepth(100);
-        this.player.anims.pause(); // <-- Pausa la animación del jugador
+        this.time.paused = true;
+        this.pauseText = this.add.text(960, 500, 'PAUSA', { fontSize: '64px', fill: '#fff', fontFamily: '"Press Start 2P", monospace' }).setOrigin(0.5, 0.5).setDepth(100);
+        this.player.anims.pause();
+
+        // Botón de opciones
+        if (!this.pauseOptionsBtn) {
+          this.pauseOptionsBtn = this.add.image(960, 600, "ops")
+            .setInteractive({ useHandCursor: true })
+            .setOrigin(0.5, 0.5)
+            .setScale(3)
+            .setDepth(101)
+            .on('pointerdown', () => {
+              this.scene.launch('opciones', { fromGame: true, music: this.music.volume, idioma: this.idioma || 'es' });
+              this.scene.bringToTop('opciones'); // <-- Esto pone la escena de opciones al frente
+            })
+              .on('pointerover', () => {
+                pauseOptionsBtn.setScale(2.7);
+              })
+              .on('pointerout', () => {
+                pauseOptionsBtn.setScale(3);
+              });
+        }
       } else {
         this.physics.world.resume();
         this.time.paused = false; // Reanuda todos los eventos de tiempo
@@ -193,6 +218,11 @@ export default class Game extends Phaser.Scene {
           this.pauseText = null;
         }
         this.player.anims.resume(); // <-- Reanuda la animación del jugador
+        // ...al reanudar, elimina el botón si existe
+        if (this.pauseOptionsBtn) {
+          this.pauseOptionsBtn.destroy();
+          this.pauseOptionsBtn = null;
+        }
       }
     }
 
@@ -361,7 +391,7 @@ export default class Game extends Phaser.Scene {
 
     // --- Crear coleccionable seguro tras el enemigo de forma aleatoria ---
     if (Phaser.Math.Between(1, 100) <= 35.5) { // <== probabilidad
-      const coleccionableX = 1950 + 150;
+      const coleccionableX = 1950 + 120;
       const coleccionableY = 922 - 280;
       const coleccionable = this.coleccionables.create(coleccionableX, coleccionableY, "coleccionable").setDepth(1000);
       coleccionable.setVelocityX(this.velocidadEnemigo).flipX = true;

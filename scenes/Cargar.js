@@ -87,7 +87,7 @@ export default class Cargar extends Phaser.Scene {
     this.load.image("reintentar", "./public/assets/Play2.png");
     this.load.image("ops", "./public/assets/Play3.png");
     this.load.image("menu", "./public/assets/Play4.png");
-    this.load.image("volver", "./public/assets/Play4.png"); // Opciones y Tuto usan Play4 para volver
+    this.load.image("volver", "./public/assets/Play6.png"); // Opciones y Tuto usan Play4 para volver
     this.load.image("contrl", "./public/assets/Play5.png");
     this.load.image("volverTuto", "./public/assets/Play6.png"); // Si usas otro para volver en Tuto
 
@@ -102,7 +102,7 @@ export default class Cargar extends Phaser.Scene {
     });
 
     // Otros assets que uses en cualquier escena...
-    // this.load.audio(...), this.load.spritesheet(...), etc.
+    this.load.audio('GameMusic', './public/assets/GameMusic.mp3');
   }
 
   create() {

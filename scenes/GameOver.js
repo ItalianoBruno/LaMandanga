@@ -56,5 +56,17 @@ export default class GameOver extends Phaser.Scene {
       this.input.keyboard.on('keydown-ESC', () => {
       this.scene.start('menu');
     });
+
+    const gameScene = this.scene.get('game');
+    if (gameScene && gameScene.music && gameScene.music.isPlaying) {
+      gameScene.music.stop();
+    }
+  }
+
+  update() {
+    // Antes de cambiar de escena
+    if (this.music && this.music.isPlaying) {
+      this.music.stop();
+    }
   }
 }
