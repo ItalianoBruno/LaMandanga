@@ -63,18 +63,9 @@ export default class Cargar extends Phaser.Scene {
     this.load.image("arbustos", "./public/Background/Arbustos.png");
 
     // Mandangómetro (todas las variantes)
-    this.load.image("Mandangometro1", "./public/assets/Mandangómetro1.png");
-    this.load.image("Mandangometro2", "./public/assets/Mandangómetro2.png");
-    this.load.image("Mandangometro3", "./public/assets/Mandangómetro3.png");
-    this.load.image("Mandangometro4", "./public/assets/Mandangómetro4.png");
-    this.load.image("Mandangometro5", "./public/assets/Mandangómetro5.png");
-    this.load.image("Mandangometro6", "./public/assets/Mandangómetro6.png");
-    this.load.image("Mandangometro7", "./public/assets/Mandangómetro7.png");
-    this.load.image("Mandangometro8", "./public/assets/Mandangómetro8.png");
-    this.load.image("Mandangometro9", "./public/assets/Mandangómetro9.png");
     this.load.spritesheet("MandangómetroSheet", "./public/assets/MandangómetroSheet.png", {
-      frameWidth: 288, // Ajusta al tamaño real de cada frame
-      frameHeight: 32 // Ajusta al tamaño real de cada frame
+      frameWidth: 288, 
+      frameHeight: 34 
     });
 
     // Coleccionables (si tienes un asset específico)
@@ -107,10 +98,14 @@ export default class Cargar extends Phaser.Scene {
       frameHeight: 160
     });
 
-    // Otros assets que uses en cualquier escena...
+    // Audios / Sonidos
     this.load.audio('GameMusic', './public/assets/GameMusic.mp3');
+    this.load.audio('Salto', './public/assets/Salto8b.mp3');
+    this.load.audio('fCOrr', './public/assets/FlechaCor.mp3');
+    this.load.audio('fIncorr', './public/assets/FlechaCorINC.mp3');
+    this.load.audio('SpeedUp', './public/assets/Speedup.mp3');
+    this.load.audio('MandRush', './public/assets/Rush.mp3');
   }
-
   create() {
     // Cuando termine la carga, pasa a la escena principal
     localStorage.removeItem('highscore');

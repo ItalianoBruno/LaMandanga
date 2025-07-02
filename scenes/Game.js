@@ -179,6 +179,8 @@ export default class Game extends Phaser.Scene {
     this.ciudad = this.add.tileSprite(960, 370, 1490, 433, "Ciudad")
       .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(3).setScale(2.3);
 
+      this.musicVolume = 0.2
+
   }
 
   update() {
@@ -231,10 +233,7 @@ export default class Game extends Phaser.Scene {
 
     //                                                               |Salto|
 
-    if (
-      this.spaceBar.isDown &&
-      this.player.body.touching.down
-    ) {
+    if (this.spaceBar.isDown && this.player.body.touching.down) {
       // Salta solo si está en el suelo y se acaba de presionar la barra
       this.player.setVelocityY(-this.speed);
       this.player.isJumping = true;
@@ -264,10 +263,10 @@ export default class Game extends Phaser.Scene {
       if (
         !this.senalActive.isRed &&
         ((this.senalActive.direction === "left" && this.cursors.left.isDown) ||
-          (this.senalActive.direction === "right" &&
-            this.cursors.right.isDown) ||
+          (this.senalActive.direction === "right" && this.cursors.right.isDown) ||
           (this.senalActive.direction === "up" && this.cursors.up.isDown))
       ) {
+        
         this.senalActive.setTint(0xf07cd9);
         this.time.delayedCall(200, () => {
           if (this.senalActive) {
@@ -277,6 +276,7 @@ export default class Game extends Phaser.Scene {
             this.senalActive = null;
             this.score += puntos; // Puntos x señal
             this.scoreText.setText("Puntaje: " + this.score);
+            this.sound.play('fCOrr', { volume: this.musicVolume });
             // Actualiza el texto de puntaje si tienes uno
           }
         });
@@ -289,6 +289,7 @@ export default class Game extends Phaser.Scene {
           (this.cursors.up.isDown && this.senalActive.direction !== "up")
         ) {
           if (!this.senalActive.isRed) {
+            this.sound.play('fIncorr', { volume: this.musicVolume + 0.1 });
             this.senalActive.setTint(0xff0000); // Rojo
             this.senalActive.isRed = true;
             this.time.delayedCall(300, () => {
@@ -463,6 +464,8 @@ export default class Game extends Phaser.Scene {
     this.mandangometro.setFrame(nivel);
 
     if (this.coleccionados >= 8 && !this.isImmune) {
+      this.sound.play('SpeedUp', { volume: this.musicVolume });
+      this.sound.play('MandRush', { volume: this.musicVolume });
       this.isImmune = true;
       this.velocidadEnemigo *= 1.5;
       this.pisoSpeed *= 1.5;
@@ -474,7 +477,7 @@ export default class Game extends Phaser.Scene {
       // Parpadeo
       this.time.delayedCall(7000, () => {
         let blink = true;
-        let mandangoNivel = 9; // Empieza lleno
+        let mandangoNivel = 8; // Empieza lleno
         const blinkEvent = this.time.addEvent({
           delay: 200, // velocidad del parpadeo
           repeat: 15, // 3 segundos / 0.2s = 15 parpadeos (aprox)
