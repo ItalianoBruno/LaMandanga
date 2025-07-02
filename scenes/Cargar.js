@@ -72,6 +72,10 @@ export default class Cargar extends Phaser.Scene {
     this.load.image("Mandangometro7", "./public/assets/Mandangómetro7.png");
     this.load.image("Mandangometro8", "./public/assets/Mandangómetro8.png");
     this.load.image("Mandangometro9", "./public/assets/Mandangómetro9.png");
+    this.load.spritesheet("MandangómetroSheet", "./public/assets/MandangómetroSheet.png", {
+      frameWidth: 288, // Ajusta al tamaño real de cada frame
+      frameHeight: 32 // Ajusta al tamaño real de cada frame
+    });
 
     // Coleccionables (si tienes un asset específico)
     this.load.image("coleccionable", "./public/assets/Mandanga.png");
@@ -83,6 +87,8 @@ export default class Cargar extends Phaser.Scene {
     this.load.image("IndicadorUp", "./public/assets/Indicador-U.png");
 
     // Botones y UI
+    this.load.image("titulo", "./public/assets/LaMandanga.png");
+
     this.load.image("jugar", "./public/assets/Play1.png");
     this.load.image("reintentar", "./public/assets/Play2.png");
     this.load.image("ops", "./public/assets/Play3.png");

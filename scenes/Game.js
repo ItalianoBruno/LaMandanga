@@ -165,7 +165,7 @@ export default class Game extends Phaser.Scene {
       this
     );
 
-    this.mandangometro = this.add.image(960, 1000, "Mandangometro1")
+    this.mandangometro = this.add.sprite(960, 1000, "MandangómetroSheet", 0)
       .setOrigin(0.5, 0.5)
       .setScrollFactor(0)
       .setScale(2.5)
@@ -268,7 +268,7 @@ export default class Game extends Phaser.Scene {
             this.cursors.right.isDown) ||
           (this.senalActive.direction === "up" && this.cursors.up.isDown))
       ) {
-        this.senalActive.setTint(0xffd700); // Dorado
+        this.senalActive.setTint(0xf07cd9);
         this.time.delayedCall(200, () => {
           if (this.senalActive) {
             let puntos = this.isImmune ? 200 : 100;
@@ -459,8 +459,8 @@ export default class Game extends Phaser.Scene {
     this.coleccionados += 1;
 
     // Limita el valor máximo a 9
-    const nivel = Math.min(this.coleccionados + 1, 9);
-    this.mandangometro.setTexture("Mandangometro" + nivel);
+    const nivel = Math.min(this.coleccionados, 8);
+    this.mandangometro.setFrame(nivel);
 
     if (this.coleccionados >= 8 && !this.isImmune) {
       this.isImmune = true;
@@ -468,7 +468,7 @@ export default class Game extends Phaser.Scene {
       this.pisoSpeed *= 1.5;
       this.tiempoMaximo *= 1.5;
       this.tiempoMinimo *= 1.5;
-      this.player.setTint(0xffd700);
+      this.player.setTint(0xf07cd9);
       this.senalEvent.delay *= 0.7;
 
       // Parpadeo
@@ -483,14 +483,14 @@ export default class Game extends Phaser.Scene {
             if (blink) {
               this.player.clearTint();
             } else {
-              this.player.setTint(0xffd700);
+              this.player.setTint(0xf07cd9);
             }
             blink = !blink;
 
             // Reduce el Mandangómetro cada vez que parpadea (solo si está bajando)
             if (mandangoNivel > 1) {
-              mandangoNivel-=1;
-              this.mandangometro.setTexture("Mandangometro" + mandangoNivel);
+              mandangoNivel -= 1;
+              this.mandangometro.setFrame(mandangoNivel - 1);
             }
           }
         });
@@ -500,13 +500,12 @@ export default class Game extends Phaser.Scene {
         this.isImmune = false;
         this.player.clearTint();
         this.coleccionados = 0;
-        this.mandangometro.setTexture("Mandangometro1");
+        this.mandangometro.setFrame(0);
         this.velocidadEnemigo /= 1.5;
         this.pisoSpeed /= 1.5;
         this.tiempoMaximo /= 1.5;
         this.tiempoMinimo /= 1.5;
         this.senalEvent.delay /= 0.7;
-
       });
     }
   }
